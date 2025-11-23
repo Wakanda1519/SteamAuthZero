@@ -20,5 +20,19 @@
 
 ## 📦 Установка
 
-Скачайте папку SteamAuthZero и подключите к проекту  
+Скачайте папку SteamAuthZero и подключите к проекту:  
 `require_once 'path/to/SteamAuthZero/SteamAuthZero.php';`
+
+--
+
+## 🛠 Использование
+
+1. Инициализация
+```php
+use Wakanda\SteamAuthZero\SteamAuthZero;
+
+$apiKey = 'YOUR_STEAM_API_KEY'; // Получить тут: https://steamcommunity.com/dev/apikey
+$returnUrl = 'https://mysite.com/login.php'; // Ссылка на этот же скрипт
+
+$auth = new SteamAuthZero($returnUrl, $apiKey);
+```
