@@ -2,8 +2,6 @@
 
 namespace Wakanda\SteamAuthZero;
 
-// ! ВАЖНО: Ручное подключение зависимости
-// Мы проверяем, подключен ли класс, если нет — подключаем файл рядом
 if (!class_exists('Wakanda\SteamAuthZero\SteamUser')) {
     require_once __DIR__ . '/Models/SteamUser.php';
 }
@@ -17,16 +15,12 @@ class SteamAuthZero
     private const API_URL = 'https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/';
 
     public function __construct(
-        private string $returnUrl, // Куда вернуть юзера после входа
-        private string $apiKey = '' // API ключ (нужен только для getUserInfo)
+        private string $returnUrl,
+        private string $apiKey = ''
     ) {}
 
-    /**
-     * Генерация ссылки на вход
-     */
     public function getLoginUrl(): string
     {
-        // Получаем домен динамически для realm
         $parsed = parse_url($this->returnUrl);
         $realm = ($parsed['scheme'] ?? 'http') . '://' . ($parsed['host'] ?? $_SERVER['HTTP_HOST']);
 
@@ -42,32 +36,23 @@ class SteamAuthZero
         return self::OPENID_URL . '?' . http_build_query($params);
     }
 
-    /**
-     * Проверка ответа от Steam. Возвращает SteamID (строку) или null.
-     */
     public function validate(): ?string
     {
         $data = $_GET;
         
-        // 1. Быстрая проверка
         if (!isset($data['openid_mode']) || $data['openid_mode'] !== 'id_res') {
             return null;
         }
 
-        // 2. Собираем параметры.
-        // Steam требует отправить обратно все поля, которые были подписаны + assoc_handle + sig
         $params = [
             'openid.ns'           => 'http://specs.openid.net/auth/2.0',
-            'openid.mode'         => 'check_authentication', // Меняем mode на проверку
+            'openid.mode'         => 'check_authentication',
             'openid.assoc_handle' => $data['openid_assoc_handle'],
             'openid.signed'       => $data['openid_signed'],
             'openid.sig'          => $data['openid_sig'],
         ];
 
-        // Добавляем остальные подписанные поля
         foreach (explode(',', $data['openid_signed']) as $field) {
-            // PHP заменяет точки на нижнее подчеркивание в $_GET ключах.
-            // Например openid.claimed_id становится openid_claimed_id
             $key = 'openid_' . str_replace('.', '_', $field);
             
             if (isset($data[$key])) {
@@ -75,23 +60,20 @@ class SteamAuthZero
             }
         }
 
-        // 3. Отправляем запрос (УБРАЛИ TRY-CATCH, чтобы видеть ошибку)
-        // Если тут упадет Fatal Error - мы увидим почему (SSL или тайм-аут)
         $response = $this->postRequest(self::OPENID_URL, $params);
 
-        // --- БЛОК ОТЛАДКИ (Удалишь потом) ---
+        // --- БЛОК ОТЛАДКИ ---
         // Если Steam вернул не то, что мы ждем, выведем это на экран
-        if (!str_contains($response, 'is_valid:true')) {
-            echo "<pre><strong>DEBUG STEAM RESPONSE:</strong><br>";
-            echo "Ответ от Steam: " . htmlspecialchars($response) . "<br>";
-            echo "Мы отправили параметры:<br>";
-            print_r($params);
-            echo "</pre>";
-            die(); // Остановим скрипт, чтобы прочитать ошибку
-        }
-        // ------------------------------------
+        // if (!str_contains($response, 'is_valid:true')) {
+        //     echo "<pre><strong>DEBUG STEAM RESPONSE:</strong><br>";
+        //     echo "Ответ от Steam: " . htmlspecialchars($response) . "<br>";
+        //     echo "Мы отправили параметры:<br>";
+        //     print_r($params);
+        //     echo "</pre>";
+        //     die();
+        // }
+        // // ------------------------------------
 
-        // 4. Успех
         if (str_contains($response, 'is_valid:true')) {
             preg_match('#^https?://steamcommunity.com/openid/id/([0-9]{17,25})#', $data['openid_claimed_id'], $matches);
             return $matches[1] ?? null;
@@ -100,9 +82,6 @@ class SteamAuthZero
         return null;
     }
 
-    /**
-     * Получение данных профиля
-     */
     public function getUserInfo(string $steamId): SteamUser
     {
         if (empty($this->apiKey)) {
@@ -114,7 +93,6 @@ class SteamAuthZero
             'steamids' => $steamId
         ]);
 
-        // GET запрос через потоки (быстрее Guzzle)
         $context = stream_context_create([
             'http' => ['timeout' => 5, 'ignore_errors' => true],
             'ssl'  => ['verify_peer' => false, 'verify_peer_name' => false] // Для локалки
@@ -135,9 +113,6 @@ class SteamAuthZero
         return SteamUser::fromArray($data['response']['players'][0]);
     }
 
-    /**
-     * Легковесный POST запрос без cURL
-     */
     private function postRequest(string $url, array $params): string
     {
         $content = http_build_query($params);
@@ -151,7 +126,7 @@ class SteamAuthZero
                 'timeout' => 10
             ],
             'ssl' => [
-                'verify_peer' => false, // Отключаем проверку SSL для простоты на локалке
+                'verify_peer' => false,
                 'verify_peer_name' => false,
             ]
         ]);
