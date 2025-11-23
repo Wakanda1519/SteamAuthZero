@@ -1,2 +1,21 @@
-# SteamAuthZero
-The fastest, easiest, and most modern library for Steam authentication in PHP
+# ⚡ SteamAuthZero
+
+**Самая быстрая, легкая и современная библиотека для авторизации через Steam на PHP.**
+
+[![PHP Version](https://img.shields.io/badge/php-%3E%3D8.1-777bb4.svg?style=flat-square)](https://www.php.net/releases/8.1/en.php)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
+[![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-success?style=flat-square)]()
+
+**SteamAuthZero** — это современная замена устаревшим библиотекам (вроде `LightOpenID`). Она написана на нативном PHP 8.1+, использует строгую типизацию и не тянет за собой Guzzle, cURL или другие тяжелые зависимости.
+
+## 🚀 Особенности
+
+*   **Zero Dependencies:** Никаких лишних файлов в `vendor`. Работает на голом PHP.
+*   **Performance:** Использует нативные PHP стримы (`stream_context`) вместо тяжелых cURL-оберток.
+*   **Strict Typing & DTO:** Вместо непонятных массивов `$user['personaname']` вы получаете удобный объект `SteamUser` с автодополнением в IDE.
+*   **Secure:** Правильная валидация подписи OpenID 2.0.
+*   **Easy to use:** Простая интеграция за 3 минуты.
+
+---
+
+## 📦 Установка
