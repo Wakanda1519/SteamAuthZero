@@ -19,3 +19,6 @@
 ---
 
 ## 📦 Установка
+
+Скачайте папку SteamAuthZero и подключите к проекту  
+```php require_once 'path/to/SteamAuthZero/SteamAuthZero.php';```
