@@ -62,18 +62,6 @@ class SteamAuthZero
 
         $response = $this->postRequest(self::OPENID_URL, $params);
 
-        // --- БЛОК ОТЛАДКИ ---
-        // Если Steam вернул не то, что мы ждем, выведем это на экран
-        // if (!str_contains($response, 'is_valid:true')) {
-        //     echo "<pre><strong>DEBUG STEAM RESPONSE:</strong><br>";
-        //     echo "Ответ от Steam: " . htmlspecialchars($response) . "<br>";
-        //     echo "Мы отправили параметры:<br>";
-        //     print_r($params);
-        //     echo "</pre>";
-        //     die();
-        // }
-        // // ------------------------------------
-
         if (str_contains($response, 'is_valid:true')) {
             preg_match('#^https?://steamcommunity.com/openid/id/([0-9]{17,25})#', $data['openid_claimed_id'], $matches);
             return $matches[1] ?? null;
@@ -141,3 +129,4 @@ class SteamAuthZero
         return $result;
     }
 }
+
